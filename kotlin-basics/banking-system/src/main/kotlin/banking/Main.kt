@@ -16,154 +16,67 @@ fun main() {
         println("5. Transfer")
         println("6. View Customer Details")
         println("7. View Bank Report")
-        println("8. Exit")
-        print("Choose an option: ")
+        println("8. View Transactions")
+        println("9. Exit")
 
         when (readLine()!!.toInt()) {
 
             1 -> {
-                print("Enter Customer ID: ")
                 val id = readLine()!!
-
-                print("Enter Name: ")
                 val name = readLine()!!
-
-                val customer = Customer(id, name)
-                bank.addCustomer(customer)
-
-                println("Customer created successfully.")
+                bank.addCustomer(Customer(id, name))
             }
 
             2 -> {
-                print("Enter Customer ID: ")
-                val id = readLine()!!
-
-                val customer = bank.findCustomer(id)
-
-                if (customer == null) {
-                    println("Customer not found.")
-                    continue
-                }
-
-                print("Enter Account Number: ")
+                val customer = bank.findCustomer(readLine()!!) ?: continue
                 val accNum = readLine()!!
-
-                print("Enter Initial Balance: ")
                 val balance = readLine()!!.toDouble()
 
-                println("Choose Account Type: 1.Savings 2.Current")
-                when (readLine()!!.toInt()) {
-                    1 -> {
-                        val account = SavingsAccount(accNum, balance, "2026", 0.05)
-                        customer.openAccount(account)
-                    }
-                    2 -> {
-                        val account = CurrentAccount(accNum, balance, "2026", 500.0)
-                        customer.openAccount(account)
-                    }
-                }
-
-                println("Account created successfully.")
+                val account = SavingsAccount(accNum, balance, "2026", 0.05)
+                bank.createAccount(customer, account)
             }
 
             3 -> {
-                print("Enter Customer ID: ")
-                val customer = bank.findCustomer(readLine()!!)
-
-                if (customer == null) {
-                    println("Customer not found.")
-                    continue
-                }
-
-                print("Enter Account Number: ")
-                val accNum = readLine()!!
-
-                val account = customer.getAccounts().find { it.accountNumber == accNum }
-
-                if (account == null) {
-                    println("Account not found.")
-                    continue
-                }
-
-                print("Enter amount: ")
+                val customer = bank.findCustomer(readLine()!!) ?: continue
+                val account = customer.getAccounts().firstOrNull() ?: continue
                 val amount = readLine()!!.toDouble()
 
                 account.deposit(amount)
-                println("Deposit successful.")
+                bank.logTransaction(Transaction("T${System.currentTimeMillis()}", "Deposit", amount, account.accountNumber))
             }
 
             4 -> {
-                print("Enter Customer ID: ")
-                val customer = bank.findCustomer(readLine()!!)
-
-                if (customer == null) {
-                    println("Customer not found.")
-                    continue
-                }
-
-                print("Enter Account Number: ")
-                val accNum = readLine()!!
-
-                val account = customer.getAccounts().find { it.accountNumber == accNum }
-
-                if (account == null) {
-                    println("Account not found.")
-                    continue
-                }
-
-                print("Enter amount: ")
+                val customer = bank.findCustomer(readLine()!!) ?: continue
+                val account = customer.getAccounts().firstOrNull() ?: continue
                 val amount = readLine()!!.toDouble()
 
                 account.withdraw(amount)
+                bank.logTransaction(Transaction("T${System.currentTimeMillis()}", "Withdraw", amount, account.accountNumber))
             }
 
             5 -> {
-                print("Enter Sender Customer ID: ")
-                val sender = bank.findCustomer(readLine()!!)
+                val sender = bank.findCustomer(readLine()!!) ?: continue
+                val receiver = bank.findCustomer(readLine()!!) ?: continue
 
-                print("Enter Receiver Customer ID: ")
-                val receiver = bank.findCustomer(readLine()!!)
+                val senderAcc = sender.getAccounts().firstOrNull() ?: continue
+                val receiverAcc = receiver.getAccounts().firstOrNull() ?: continue
 
-                if (sender == null || receiver == null) {
-                    println("Invalid customers.")
-                    continue
-                }
-
-                print("Enter Sender Account Number: ")
-                val senderAcc = sender.getAccounts().find { it.accountNumber == readLine()!! }
-
-                print("Enter Receiver Account Number: ")
-                val receiverAcc = receiver.getAccounts().find { it.accountNumber == readLine()!! }
-
-                if (senderAcc == null || receiverAcc == null) {
-                    println("Invalid accounts.")
-                    continue
-                }
-
-                print("Enter amount: ")
                 val amount = readLine()!!.toDouble()
 
                 senderAcc.transfer(amount, receiverAcc)
-                println("Transfer completed.")
+
+                bank.logTransaction(
+                    Transaction("T${System.currentTimeMillis()}", "Transfer", amount, senderAcc.accountNumber, receiverAcc.accountNumber)
+                )
             }
 
-            6 -> {
-                print("Enter Customer ID: ")
-                val customer = bank.findCustomer(readLine()!!)
+            6 -> bank.findCustomer(readLine()!!)?.printCustomerDetails()
 
-                customer?.printCustomerDetails() ?: println("Customer not found.")
-            }
+            7 -> bank.generateReport()
 
-            7 -> {
-                bank.generateReport()
-            }
+            8 -> bank.showTransactions()
 
-            8 -> {
-                println("Exiting system...")
-                return
-            }
-
-            else -> println("Invalid choice.")
+            9 -> return
         }
     }
 }
