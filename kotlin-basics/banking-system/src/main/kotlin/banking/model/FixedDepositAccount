@@ -1,0 +1,17 @@
+package banking.model
+
+class FixedDepositAccount(
+    accountNumber: String,
+    balance: Double,
+    openedDate: String,
+    private val interestRate: Double
+) : Account(accountNumber, balance, openedDate) {
+
+    override fun withdraw(amount: Double) {
+        println("Cannot withdraw before maturity")
+    }
+
+    override fun calculateMonthlyInterest(): Double {
+        return getBalance() * interestRate
+    }
+}
